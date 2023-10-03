@@ -1,6 +1,7 @@
 import { Router } from "express";
-import {body, validationResult} from "express-validator"
+import {body} from "express-validator"
 import { createProduct, deleteProduct, getAllUserProducts, getOneUserProduct, updaterProduct } from "./handlers/product";
+import { createUpdate, deleteUpdate, getAllUserUpdates, getOneUserUpdate, updaterUpdate } from "./handlers/update";
 import { handleInputErrors } from "./modules/middleware";
 
 const router = Router();
@@ -21,24 +22,24 @@ router.delete("/product/:id", deleteProduct);
  * Update
  */
 
-router.get("/update", (req, res) => {});
+router.get("/update", getAllUserUpdates);
 
-router.get("/update/:id", (req, res) => {});
+router.get("/update/:id", getOneUserUpdate);
 
 router.post("/update",
 body('title').isString(),
 body('body').isString(),
 body('productId').isString(),
-(req, res) => {});
+createUpdate);
 
 router.put("/update/:id",
 body('title').optional(),
 body('body').optional(),
 body('version').optional(),
 body('status').isIn(['IN_PROGRESS', 'SHIPPED', 'DEPRECATED']).optional(),
-(req, res) => {});
+updaterUpdate);
 
-router.delete("/update/:id", (req, res) => {});
+router.delete("/update/:id", deleteUpdate);
 
 /**
  * UpdatePoint
