@@ -1,36 +1,57 @@
-import { runInNewContext } from "vm";
 import prisma from "../db";
 import { comparePasswords, createJWT, hashPassword } from "../modules/auth";
 
-export const createNewUser = async (req,res)=>{
-    const user = await prisma.user.create({
-        data:{
-            username:req.body.username,
-            password: await hashPassword(req.body.password),
-        }
-    })
+export const createNewUser = async (req, res) => {
+    try {
+        const { username, password } = req.body;
 
-    const token = createJWT(user)
-    res.json({token})
-}
+        const existingUser = await prisma.user.findUnique({
+            where: {
+                username,
+            }
+        });
 
-export const signin = async (req,res)=>{
-    const user = await prisma.user.findUnique({
-        where:{
-            username:req.body.username,
+        if (existingUser) {
+            return res.status(409).json({ message: "Username already exists." });
         }
-    })
-    if(!user){
-        res.status(401)
-        res.json({message:"username not right"})
-        return
+
+        const hashedPassword = await hashPassword(password);
+        const newUser = await prisma.user.create({
+            data: {
+                username,
+                password: hashedPassword,
+            }
+        });
+
+        const token = createJWT(newUser);
+        res.status(201).json({ token });
+    } catch (e) {
+        res.status(500).json({ message: "An error occurred while creating a new user." });
     }
-    const isvalid = await comparePasswords(req.body.password, user.password)
-    if(!isvalid){
-        res.status(401)
-        res.json({message:"password not right"})
-        return
+};
+
+export const signin = async (req, res) => {
+    try {
+        const { username, password } = req.body;
+
+        const user = await prisma.user.findUnique({
+            where: {
+                username,
+            }
+        });
+
+        if (!user) {
+            return res.status(401).json({ message: "Invalid username." }); 
+        }
+
+        const isValid = await comparePasswords(password, user.password);
+        if (!isValid) {
+            return res.status(401).json({ message: "Invalid password." });
+        }
+
+        const token = createJWT(user);
+        res.json({ token }); 
+    } catch (e) {
+        res.status(500).json({ message: "An error occurred during sign-in." });
     }
-    const token = createJWT(user)
-    res.json({token})
-}
+};

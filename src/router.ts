@@ -12,9 +12,9 @@ router.get("/product", getAllUserProducts);
 
 router.get("/product/:id", getOneUserProduct);
 
-router.post("/product", body('name').isString(),handleInputErrors, createProduct);
+router.post("/product", body('name').isString().notEmpty(),handleInputErrors, createProduct);
 
-router.put("/product/:id", body('name').isString(),handleInputErrors, updaterProduct);
+router.put("/product/:id", body('name').isString().notEmpty(),handleInputErrors, updaterProduct);
 
 router.delete("/product/:id", deleteProduct);
 
@@ -27,16 +27,18 @@ router.get("/update", getAllUserUpdates);
 router.get("/update/:id", getOneUserUpdate);
 
 router.post("/update",
-body('title').isString(),
-body('body').isString(),
-body('productId').isString(),
+body('title').isString().notEmpty(),
+body('body').isString().notEmpty(),
+body('productId').isString().notEmpty(),
+handleInputErrors,
 createUpdate);
 
 router.put("/update/:id",
-body('title').optional(),
-body('body').optional(),
-body('version').optional(),
-body('status').isIn(['IN_PROGRESS', 'SHIPPED', 'DEPRECATED']).optional(),
+body('title').optional().isString().notEmpty(),
+body('body').optional().isString().notEmpty(),
+body('version').optional().isString().notEmpty(),
+body('status').optional().isIn(['IN_PROGRESS', 'SHIPPED', 'DEPRECATED']),
+handleInputErrors,
 updaterUpdate);
 
 router.delete("/update/:id", deleteUpdate);
@@ -45,21 +47,23 @@ router.delete("/update/:id", deleteUpdate);
  * UpdatePoint
  */
 
-router.get("/updatepoint", (req, res) => {});
+router.get("/updatepoint", () => {});
 
-router.get("/updatepoint/:id", (req, res) => {});
+router.get("/updatepoint/:id", () => {});
 
 router.post("/updatepoint",
-body('name').isString(), 
-body('description').isString(),
-body('updateId').isString(),
-(req, res) => {});
+body('name').isString().notEmpty(), 
+body('description').isString().notEmpty(),
+body('updateId').isString().notEmpty(),
+handleInputErrors,
+() => {});
 
 router.put("/updatepoint/:id",
-body('name').optional().isString(), 
-body('description').optional().isString(),
-(req, res) => {});
+body('name').optional().isString().notEmpty(), 
+body('description').optional().isString().notEmpty(),
+handleInputErrors,
+() => {});
 
-router.delete("/updatepoint/:id", (req, res) => {});
+router.delete("/updatepoint/:id", () => {});
 
 export default router;
