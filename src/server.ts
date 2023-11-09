@@ -39,5 +39,13 @@ body('password').isString(),
 handleInputErrors,
 signin)
 
+app.use((err,req,res,next)=>{
+    if(err.type === 'auth'){
+        res.status(401).json({message:"Username already exists."})
+    }
+    else{
+        res.status(500).json({ message: `An error occurred: ${err.message}`})
+    }
+})
 
 export default app

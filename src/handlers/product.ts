@@ -1,6 +1,6 @@
 import prisma from "../db";
 
-export const getAllUserProducts = async (req, res) => {
+export const getAllUserProducts = async (req, res, next) => {
     try {
         const userProducts = await prisma.user.findUniqueOrThrow({
             where: {
@@ -12,11 +12,12 @@ export const getAllUserProducts = async (req, res) => {
         });
         res.json({ data: userProducts.products });
     } catch (e) {
-        res.status(404).json({ message: "No products found for the user or user does not exist." });
+        e.type= "notFound";
+        next(e);
     }
 };
 
-export const getOneUserProduct = async (req, res) => {
+export const getOneUserProduct = async (req, res,next) => {
     const id = req.params.id;
     try {
         const product = await prisma.product.findFirstOrThrow({
@@ -27,25 +28,22 @@ export const getOneUserProduct = async (req, res) => {
         });
         res.json({ data: product });
     } catch (e) {
-        res.status(404).json({ message: "Product not found or does not belong to the user." });
+        e.type= "notFound";
+        next(e);
     }
 };
 
 export const createProduct = async (req, res) => {
-    try {
-        const product = await prisma.product.create({
-            data: {
-                name: req.body.name,
-                belongsToId: req.user.id
-            }
-        });
-        res.status(201).json({ data: product });
-    } catch (e) {
-        res.status(500).json({ message: "An error occurred while creating the product." });
-    }
+    const product = await prisma.product.create({
+        data: {
+            name: req.body.name,
+            belongsToId: req.user.id
+        }
+    });
+    res.status(201).json({ data: product });
 };
 
-export const updaterProduct = async (req, res) => {
+export const updaterProduct = async (req, res,next) => {
     try {
         const updatedProduct = await prisma.product.update({
             where: {
@@ -60,15 +58,12 @@ export const updaterProduct = async (req, res) => {
         });
         res.json({ data: updatedProduct });
     } catch (e) {
-        if (e.code === 'P2025') {
-            res.status(404).json({ message: "Product not found or does not belong to the user." });
-        } else {
-            res.status(500).json({ message: "An error occurred while updating the product." });
-        }
+        e.type= "notFound";
+        next(e);
     }
 };
 
-export const deleteProduct = async (req, res) => {
+export const deleteProduct = async (req, res, next) => {
     try {
         const deletedProduct = await prisma.product.delete({
             where: {
@@ -80,10 +75,7 @@ export const deleteProduct = async (req, res) => {
         });
         res.json({ data: deletedProduct });
     } catch (e) {
-        if (e.code === 'P2025') {
-            res.status(404).json({ message: "Product not found or does not belong to the user." });
-        } else {
-            res.status(500).json({ message: "An error occurred while deleting the product." });
-        }
+        e.type= "notFound";
+        next(e);
     }
 };

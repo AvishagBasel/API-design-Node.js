@@ -29,7 +29,7 @@ router.get("/update/:id", getOneUserUpdate);
 router.post("/update",
 body('title').isString().notEmpty(),
 body('body').isString().notEmpty(),
-body('productId').isString().notEmpty(),
+body('productID').isString().notEmpty(),
 handleInputErrors,
 createUpdate);
 
@@ -65,5 +65,15 @@ handleInputErrors,
 () => {});
 
 router.delete("/updatepoint/:id", () => {});
+
+
+router.use((err,req,res,next)=>{
+    if(err.type === 'notFound'){
+        res.status(401).json({message:"not found or does not belong to the user."})
+    }
+    else{
+        res.status(500).json({ message: `An error occurred: ${err.message}`})
+    }
+})
 
 export default router;
